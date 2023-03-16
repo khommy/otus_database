@@ -63,20 +63,15 @@ begin
 				select doctors.doctor_name,doctors.mo_id
 				from doctors 
 				where 1=1
-				and doctors.doctor_id = recording.doctor_id
 				and recording.mo_id = doctors.mo_id
+				and doctors.doctor_id = recording.doctor_id				
 				and coalesce(work_enddate, 'Infinity') >= now() -- Врач работает в мед организации на момент отчета
 				and occupancy_type_id = 1 -- основное место работы
 				) doc on true
 
 			left join public.medorganisation mo on mo.mo_id = doc.mo_id
-			left join lateral (
-				select 
-					concat_ws(' '
-							  ,person_surname
-							  ,person_firstname
-							  ,person_secname
-							 ) pers_fio		
+			cross join lateral (
+				select persons.person_id
 				from public.persons persons
 				cross join lateral (
 						select 1 
@@ -86,7 +81,7 @@ begin
 						and coalesce(polis_enddate, 'Infinity') >= $4
 						limit 1
 					 ) polis 
-				)pers on true
+				)pers 
 
 			left join lateral (	
 				select polyclinic_case_id,result_type_id
@@ -95,10 +90,10 @@ begin
 					on visit.polyclinic_visit_pid = sluch.polyclinic_case_id
 					and finish_id = 1 -- случай закончен
 				) polca_case on true
-			where 1=1
-			and recording_begdate between $3 and $4		
+			where 1=1			
 			and (recording.mo_id = $1 or recording.mo_id is null)
 			and (recording.doctor_id = $2 or recording.mo_id is null)
+			and recording_begdate between $3 and $4		
 			group by mo.mo_name,doc.doctor_name
 			order by mo.mo_name,doc.doctor_name			
 			; 
@@ -111,15 +106,9 @@ OWNER TO postgres;
 -- Список пациентов на прием
 CREATE OR REPLACE FUNCTION public.list_recording_date(
 	p_mo_id bigint DEFAULT NULL::bigint,
-	p_doctor_id bigint DEFAULT NULL::bigint,
-	p_date timestamp DEFAULT NULL::timestamp
-	)	
-    RETURNS TABLE(
-		card_num text
-		,pers_fio text
-		,person_birthday bigint
-		,cnt_all_internet bigint
-		,cnt_all_registrator bigint, cnt_all_terminal bigint, cnt_pers_busy bigint, cnt_person bigint, cnt_fact bigint, cnt_polyclinic_case bigint, cnt_result bigint) 
+	p_doctor_id bigint DEFAULT NULL::bigint,	
+	p_date timestamp without time zone DEFAULT NULL::timestamp without time zone)
+    RETURNS TABLE(card_num text, pers_fio text, person_birthday bigint, cnt_all_internet bigint, cnt_all_registrator bigint, cnt_all_terminal bigint, cnt_pers_busy bigint, cnt_person bigint, cnt_fact bigint, cnt_polyclinic_case bigint, cnt_result bigint) 
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE PARALLEL UNSAFE
@@ -128,55 +117,57 @@ CREATE OR REPLACE FUNCTION public.list_recording_date(
 AS $BODY$
 begin
 	return query
-			select 
-				card_num
-				,concat_ws(' '
-						  ,person_surname
-						  ,person_firstname
-						  ,person_secname
-						 ) pers_fio
-				,person_birthday
-				,phone_num
-				,concat_ws(', ',_index
-						   ,_country
-						   ,rgn
-						   ,city
-						   ,town
-						   ,'ул. '||street
-						   ,'д. '||house 
-						   ,case when corpus = chr(45) then '' else 'корп. '||corpus end
-						   ,'кв . '||flat
-						  ) as adress_fact_name
-				,polis.polis_type_name||', '||' Сер.:'||polis.polis_ser||' №:'||polis.polis_num||' Организация: '||org_name as polis
+				select 
+						card_num
+						,concat_ws(' '
+								  ,person_surname
+								  ,person_firstname
+								  ,person_secname
+								 ) pers_fio
+						,person_birthday
+						,phone_num
+						,concat_ws(', ',_index
+								   ,_country
+								   ,rgn
+								   ,city
+								   ,town
+								   ,'ул. '||street
+								   ,'д. '||house 
+								   ,case when corpus = chr(45) then '' else 'корп. '||corpus end
+								   ,'кв . '||flat
+								  ) as adress_fact_name
+						,polis.polis_type_name||', '||' Сер.:'||polis.polis_ser||' №:'||polis.polis_num||' Организация: '||org_name as polis
 
-			from recording
-			join persons on recording.person_id = persons.person_id
-			join public.polyclinic_case sluch 
-				on sluch.polyclinic_case_id = recording.polyclinic_case_id
-			cross join lateral (
-						select  polis_type.polis_type_name
-								,polis.polis_ser
-								,polis.polis_num
-								,org.org_name
-						from public.person_polis polis
-						join public.polis_type polis_type 
-							on polis.polis_type_id = polis_type.polis_type_id
-						join public.org org 
-							on polis.org_id = org.org_id
-						where 1=1
-						and polis.person_polis_id = persons.person_polis_id
-						and coalesce(polis_enddate, 'Infinity') >= $3
-						limit 1
-					 ) polis 
-			left join v_adress adress on adress.adress_id = persons.adress_fact_id
-
-			where 1=1 
-			and recording.doctor_id = $2 
-			and recording.mo_id = $1 
-			and recording.recording_begdate = $3
-			; 
+				from recording
+				join persons on persons.person_id=recording.person_id
+					
+				join public.polyclinic_case sluch 
+					on sluch.polyclinic_case_id = recording.polyclinic_case_id
+				cross join lateral (
+							select  polis_type.polis_type_name
+									,polis.polis_ser
+									,polis.polis_num
+									,org.org_name
+							from public.person_polis polis
+							join public.polis_type polis_type 
+								on polis.polis_type_id = polis_type.polis_type_id
+							join public.org org 
+								on polis.org_id = org.org_id
+							where 1=1
+							and polis.person_polis_id = persons.person_polis_id
+							and coalesce(polis_enddate, 'Infinity') >= $3
+							limit 1
+						 ) polis 
+				left join v_adress adress on adress.adress_id = persons.adress_fact_id
+				
+				where 1=1 
+				and recording.doctor_id = $2 
+				and recording.mo_id = $1 
+				and recording.recording_begdate = $3
+				order by concat_ws(' ',person_surname,person_firstname,person_secname) 
+				; 
 end;
 $BODY$;
 
-ALTER FUNCTION public.list_recording_date(bigint, bigint, timestamp with time zone)
+ALTER FUNCTION public.list_recording_date(bigint, bigint, timestamp without time zone)
     OWNER TO postgres;
