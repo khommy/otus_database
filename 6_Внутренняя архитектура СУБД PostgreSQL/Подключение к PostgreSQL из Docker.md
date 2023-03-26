@@ -4,4 +4,4 @@
 
 - Cоздание yaml файла docker-compose
 
-![Рис 1](https://github.com/khommy/otus_database/blob/main/image1.png)
+![Рис 1](https://github.com/khommy/otus_database/blob/main/6_Внутренняя%20архитектура%20СУБД%20PostgreSQL/image/step1.png)
