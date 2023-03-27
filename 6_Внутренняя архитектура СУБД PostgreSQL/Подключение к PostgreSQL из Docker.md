@@ -18,3 +18,7 @@
 - Подключением к базе данных recorging_clinic через командную строку, проверка создания таблицы
 
 ![Рис 4](https://github.com/khommy/otus_database/blob/main/6_Внутренняя%20архитектура%20СУБД%20PostgreSQL/image/step4.png)
+
+- Подключением к базе данных recorging_clinic через vs code
+
+![Рис 5](https://github.com/khommy/otus_database/blob/main/6_Внутренняя%20архитектура%20СУБД%20PostgreSQL/image/step5.png)
