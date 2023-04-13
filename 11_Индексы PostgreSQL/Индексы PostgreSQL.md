@@ -193,4 +193,4 @@ SELECT * FROM bookings.tickets WHERE contact_data ->> 'email' = 'aaleksandrov197
 "  ->  Parallel Seq Scan on tickets  (cost=0.00..67853.50 rows=6146 width=104)"
 "        Filter: ((contact_data ->> 'email'::text) = 'aaleksandrov1975@postgrespro.ru'::text)"
 ```
-NfТже решить ее не смогла
+Также решить ее не смогла
