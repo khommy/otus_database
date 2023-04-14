@@ -181,16 +181,13 @@ where status = 'Arrived' and scheduled_departure > '2015-10-13' ;
 ```
 
 ### 6. 
-Столкнулась с проблемой при создании индекса для формата jsonb
+Cоздание индекса для формата jsonb
 ```sh
-CREATE INDEX ON bookings.tickets ((contact_data->'email'));
+CREATE INDEX ON bookings.tickets ((contact_data->>'email'));
 analyze bookings.tickets;
 explain
 SELECT * FROM bookings.tickets WHERE contact_data ->> 'email' = 'aaleksandrov1975@postgrespro.ru';
 
-"Gather  (cost=1000.00..70328.60 rows=14751 width=104)"
-"  Workers Planned: 2"
-"  ->  Parallel Seq Scan on tickets  (cost=0.00..67853.50 rows=6146 width=104)"
-"        Filter: ((contact_data ->> 'email'::text) = 'aaleksandrov1975@postgrespro.ru'::text)"
+"Index Scan using tickets_expr_idx1 on tickets  (cost=0.43..8.45 rows=1 width=104)"
+"  Index Cond: ((contact_data ->> 'email'::text) = 'aaleksandrov1975@postgrespro.ru'::text)"
 ```
-Также решить ее не смогла
