@@ -4,15 +4,15 @@
 
 - Запуск контейнера
 
-![Рис 1](https://github.com/khommy/otus_database/tree/main/21_Mysql_docker/image/step1.png)
+![Рис 1](https://github.com/khommy/otus_database/blob/main/21_Mysql_docker/image/step1.PNG)
 
 - GhПверка контейнеров
 
-![Рис 2](https://github.com/khommy/otus_database/tree/main/21_Mysql_docker/image/step2.png)
+![Рис 2](https://github.com/khommy/otus_database/blob/main/21_Mysql_docker/image/step2.PNG)
 
 
 - Подключение базе данных mysql через командную строку, просмотр баз данных
 
-![Рис 3](https://github.com/khommy/otus_database/tree/main/21_Mysql_docker/image/step3.png)
+![Рис 3](https://github.com/khommy/otus_database/blob/main/21_Mysql_docker/image/step3.PNG)
 
   
