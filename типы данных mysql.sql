@@ -28,14 +28,14 @@ CREATE TABLE IF NOT EXISTS recorging_clinic.adress (
 );
 
 CREATE TABLE IF NOT EXISTS recorging_clinic.doctor (
-	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY, -- переписан на псевданим т.к. так быстрее
-	person_id bigint UNSIGNED NOT NULL,
-	doctor_name varchar(250),
-	mo_id bigint UNSIGNED,
-	num_room integer UNSIGNED NOT NULL,
-	work_begdate datetime,
-	work_enddate datetime,
-	occupancy_type enum('osn', 'sovm'), -- смена типа, убрала ссылку на справочную таблицу благодаря типу данных 
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY, -- переписан на псевданим т.к. так быстрее
+    person_id bigint UNSIGNED NOT NULL,
+    doctor_name varchar(250),
+    mo_id bigint UNSIGNED,
+    num_room integer UNSIGNED NOT NULL,
+    work_begdate datetime,
+    work_enddate datetime,
+    occupancy_type enum('osn', 'sovm'), -- смена типа, убрала ссылку на справочную таблицу благодаря типу данных 
 	doctor_insdate datetime, -- смена типа данных
 	doctor_update datetime -- смена типа данных
 );
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS recorging_clinic.person (
 	adress_reg_id bigint UNSIGNED,
 	adress_fact_id bigint UNSIGNED,
 	person_card_id bigint UNSIGNED,
-	person_attribute json
+    person_attribute json
 );
 
 -- 2. Задание работа с JSON
@@ -61,18 +61,18 @@ INSERT INTO recorging_clinic.person(
 	person_firstname,
 	person_secname,
 	person_birthday,
-	person_polis_id,
+    person_polis_id,
 	person_attribute
 )
 VALUES(
 	'Иванов',
 	'Иван',
-	'Иванович',
-	'1987-01-19',
-	'1',
+    'Иванович',
+    '1987-01-19',
+    '1',
 	'{"phone": "89194459875", "email": "ivanovii@rambler.ru",
-	  "passport": {"ser": "1125", "num": "897584", "data": "20110101", "orgvid": "Отделом УФМС России"}}'
-	);
+      "passport": {"ser": "1125", "num": "897584", "data": "20110101", "orgvid": "Отделом УФМС России"}}'
+);
 
 select * 
 from recorging_clinic.person;
@@ -105,7 +105,7 @@ SET `person_attribute` = JSON_REPLACE(
 )
 select * from recorging_clinic.person
 WHERE id = 1;
-
+    
 
 CREATE TABLE IF NOT EXISTS person_card (
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
@@ -124,15 +124,15 @@ CREATE TABLE IF NOT EXISTS mo (
 );
 
 CREATE TABLE IF NOT EXISTS org (
-	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
-	org_code integer UNSIGNED NOT NULL,
-	org_name text ,
-	org_uradress_id bigint UNSIGNED NOT NULL,
-	org_pochtadress_id bigint UNSIGNED NOT NULL,
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    org_code integer UNSIGNED NOT NULL,
+    org_name text ,
+    org_uradress_id bigint UNSIGNED NOT NULL,
+    org_pochtadress_id bigint UNSIGNED NOT NULL,
 	org_insdate datetime,
 	org_update datetime,
-	recviziti json    
-	);
+    recviziti json    
+);
 
 CREATE TABLE IF NOT EXISTS person_polis (
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
@@ -147,43 +147,43 @@ CREATE TABLE IF NOT EXISTS person_polis (
 );
 
 CREATE TABLE IF NOT EXISTS polyclinic_case (
-	id  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
-	person_id bigint UNSIGNED NOT NULL,
-	policlinic_case_begdate datetime NOT NULL,
-	policlinic_case_enddate datetime,
-	diag_id bigint UNSIGNED NOT NULL,
-	diag_pid bigint UNSIGNED NOT NULL,
-	person_card_id bigint NOT NULL,
-	mo_id bigint UNSIGNED NOT NULL,
-	result_type enum('vizdor','neizmen','oslojznen'),
-	finish enum('zaktit', 'nezakrit') NOT NULL,
+    id  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    person_id bigint UNSIGNED NOT NULL,
+    policlinic_case_begdate datetime NOT NULL,
+    policlinic_case_enddate datetime,
+    diag_id bigint UNSIGNED NOT NULL,
+    diag_pid bigint UNSIGNED NOT NULL,
+    person_card_id bigint NOT NULL,
+    mo_id bigint UNSIGNED NOT NULL,
+    result_type enum('vizdor','neizmen','oslojznen'),
+    finish enum('zaktit', 'nezakrit') NOT NULL,
 	polyclinic_insdate datetime,
 	polyclinic_update datetime
-	);
+   );
 
 CREATE TABLE IF NOT EXISTS policlinic_visit (
-	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
-	policlinic_visit_pid bigint UNSIGNED NOT NULL,
-	policlinic_visit_count integer UNSIGNED,
-	visit_begdate datetime,
-	visit_enddate datetime,
-	oplata enum('oms', 'dms', 'money') not null,
-	diag_id bigint UNSIGNED NOT NULL,
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    policlinic_visit_pid bigint UNSIGNED NOT NULL,
+    policlinic_visit_count integer UNSIGNED,
+    visit_begdate datetime,
+    visit_enddate datetime,
+    oplata enum('oms', 'dms', 'money') not null,
+    diag_id bigint UNSIGNED NOT NULL,
 	policlinic_visit_insdate datetime,
 	policlinic_visit_update datetime
-	);
-
-CREATE TABLE IF NOT EXISTS recording (
-	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
-	doctor_id bigint UNSIGNED NOT NULL,
-	person_id bigint UNSIGNED NOT NULL,
-	recording_begdate datetime,
-	recording_begtime time,
-	recording_factdate datetime,
-	recording_facttime time,
-	recordtype enum('registrator','internet', 'terminal', 'prilojz') NOT NULL,
-	polyclinic_case_id bigint UNSIGNED NOT NULL,
-	mo_id integer UNSIGNED NOT NULL,
+   );
+   
+   CREATE TABLE IF NOT EXISTS recording (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    doctor_id bigint UNSIGNED NOT NULL,
+    person_id bigint UNSIGNED NOT NULL,
+    recording_begdate datetime,
+    recording_begtime time,
+    recording_factdate datetime,
+    recording_facttime time,
+    recordtype enum('registrator','internet', 'terminal', 'prilojz') NOT NULL,
+    polyclinic_case_id bigint UNSIGNED NOT NULL,
+    mo_id integer UNSIGNED NOT NULL,
 	recording_insdate datetime,
 	recording_update datetime
 );
