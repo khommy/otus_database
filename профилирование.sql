@@ -1,0 +1,33 @@
+
+use adventureworks;
+
+select SQL_CALC_FOUND_ROWS 
+	ord.orderYear, 
+	ord.orderMonth, 
+	orderSum.start_order AS start_order,
+	orderSum.finish_order AS finish_order,
+	COALESCE(orderSum.TotalSUM, 0) as TotalSUM, 
+	COALESCE(orderSum.TotalQ,0) as TotalQ
+from (
+	select distinct
+		 year(OrderDate) as orderYear
+		,month(OrderDate) as orderMonth
+	from SalesOrderHeader ord 
+) ord
+
+LEFT JOIN (
+			SELECT 
+				YEAR(ord1.OrderDate) as orderYear1
+				, MONTH(ord1.OrderDate) as orderMonth1
+                , Min(ord1.OrderDate) AS start_order
+                , Max(ord1.OrderDate) AS finish_order             
+                , SUM(orddetail.orderqty*orddetail.unitprice) AS TotalSUM              
+                , SUM(orddetail.orderqty) AS TotalQ
+           FROM SalesOrderHeader ord1 
+		   join SalesOrderDetail orddetail on ord1.SalesOrderID = orddetail.SalesOrderID 		           
+           GROUP BY YEAR(ord1.OrderDate), MONTH(ord1.OrderDate)
+		   HAVING SUM(orddetail.orderqty) < 3000
+           ) as orderSum 
+			on orderSum.orderMonth1 = ord.orderMonth
+			and orderSum.orderYear1 = ord.orderYear
+order by ord.orderYear, ord.orderMonth;
