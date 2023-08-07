@@ -1,0 +1,94 @@
+Создание 2 виртуальных машин Master и Replica на базе Ubuntu
+
+
+ssh ключ
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPxHCXtnQvzO6UzSERYkkGFC8vEeVCQL49/jr73O20lT khomyakovaekat@gmail.com
+
+IP
+master публичный IP              158.160.6.216
+replica публичный IP             84.252.139.111
+
+
+Подключение к VM из терминала:
+master                       ssh khomyakovaekat@158.160.6.216
+replica                      ssh khomyakovaekat@84.252.139.111
+
+При первом подключении к ВМ появится предупреждение о неизвестном хосте: нажать yes
+
+
+Установка PostgreSQL
+
+sudo apt update && sudo apt upgrade -y && sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - && sudo apt-get update && sudo apt-get -y install postgresql && sudo apt install unzip && sudo apt -y install mc
+
+
+Установить пароль для Postgres:
+sudo -i -u postgres
+
+Добавить сетевые правила для подключения к Postgres на мастере:
+Master
+		sudo nano /etc/postgresql/15/main/postgresql.conf
+		#listen_addresses = 'localhost'
+		listen_addresses = '*'
+
+		sudo nano /etc/postgresql/15/main/pg_hba.conf
+		host    replication     all             158.160.80.106/22       scram-sha-256 --слушать реплику
+
+
+Master
+		Проверка, что это мастер 
+		select pg_is_in_recovery(); 
+		Будет f
+		
+		
+
+Replica
+		pg_ctlcluster 15 main status
+		pg_ctlcluster 15 main stop             остановка кластера 
+
+
+		rm -rf /var/lib/postgresql/15/main/   и удаление его директории
+
+		su - postgres
+		pg_basebackup -h 158.160.27.129 -R -D /var/lib/postgresql/15/main -U postgres     прдписка на директорию мастера  ошибка т.к. в мастере не прописано, что реплика будет стучаться
+
+		cd /var/lib/postgresql/  --посмотрим в директории созданные файлы стенбай
+		mc 
+
+		pg_ctlcluster 15 main start 
+
+
+Синхронная репликация 
+replica 
+		останавливаем кластер
+		прописываем в файле auto.conf строку primary_conninfo = 'application_name=replica` 
+		стартуем
+
+Master
+		alter system set synchronous_commit = on;
+		alter system set synchronous_standby_names = 'replica';
+		рестарт select pg_reload_conf();
+
+select * from pg_stat_replication;
+
+
+Логическая репликация 
+--wal_level= logical
+sudo nano /etc/postgresql/15/main/postgresql.conf  
+--ALTER SYSTEM SET wal_level = logical;
+pg_ctlcluster 15 main restart;
+
+
+на Master
+-- создать публикацию
+CREATE PUBLICATION test_pub FOR TABLE test;
+--посмотрим что получилось
+select * from pg_publication;
+select * from pg_publication_tables;
+
+Slave
+
+
+CREATE SUBSCRIPTION test_sub 
+CONNECTION 'host=your_ip port=5432 user=postgres password=Pa$$w0rd dbname=replica' 
+PUBLICATION test_pub ;
+
